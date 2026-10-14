@@ -44,6 +44,7 @@ describe("Semion Vite integration", () => {
     const chunks = outputs.filter((output): output is TestChunk => output.type === "chunk");
     const assets = outputs.filter((output): output is TestAsset => output.type === "asset");
     const svgAssets = assets.filter((asset) => asset.fileName.endsWith(".svg"));
+    const cssAssets = assets.filter((asset) => asset.fileName.endsWith(".css"));
     const entryChunk = chunks.find((chunk) => chunk.isEntry);
     const lazyChunk = chunks.find((chunk) => chunk.isDynamicEntry);
 
@@ -64,6 +65,13 @@ describe("Semion Vite integration", () => {
     expect(entryChunk?.code).not.toContain(lazyAsset?.fileName);
     expect(entryChunk?.code).not.toContain("data:image/svg+xml");
     expect(lazyChunk?.code).not.toContain("data:image/svg+xml");
+    expect(chunks.map((chunk) => chunk.code).join("\n")).not.toContain("<svg");
+
+    expect(cssAssets).toHaveLength(1);
+    const emittedCss = String(cssAssets[0]?.source);
+    expect(emittedCss).toContain(".semion-icon");
+    expect(emittedCss).toContain("background-color:currentColor");
+    expect(emittedCss).toContain("mask-size:contain");
 
     const generatedTypes = readGeneratedTypes(root);
     expect(generatedTypes).toContain('"search": true;');
@@ -73,8 +81,15 @@ describe("Semion Vite integration", () => {
     const typeSource = path.join(root, "src/type-check.tsx");
     writeFileSync(
       typeSource,
-      'import { Icon } from "semion";\n' +
-        'const valid = <Icon name="search" className="large" aria-label="Search" />;\n' +
+      'import { Icon, type IconName } from "semion";\n' +
+        'type Equal<Actual, Expected> = (<T>() => T extends Actual ? 1 : 2) extends (<T>() => T extends Expected ? 1 : 2) ? true : false;\n' +
+        'type Assert<T extends true> = T;\n' +
+        'type IconNameAutocomplete = Assert<Equal<IconName, "search" | "user" | "unused">>;\n' +
+        'const validName: IconName = "search";\n' +
+        'const valid = <Icon name={validName} className="large" aria-label="Search" />;\n' +
+        '// @ts-expect-error Unknown names are rejected after Vite generates the declaration.\n' +
+        'const invalidName: IconName = "not-found";\n' +
+        '// @ts-expect-error JSX name props use the same generated union.\n' +
         'const invalid = <Icon name="not-found" />;\n',
     );
     const typeProgram = ts.createProgram(
@@ -90,10 +105,7 @@ describe("Semion Vite integration", () => {
       },
     );
     const typeErrors = ts.getPreEmitDiagnostics(typeProgram);
-    expect(typeErrors).toHaveLength(1);
-    expect(ts.flattenDiagnosticMessageText(typeErrors[0]!.messageText, "\n")).toContain(
-      '"not-found"',
-    );
+    expect(typeErrors).toHaveLength(0);
   });
 
   it("builds the Lucide React example with three external SVG assets", async () => {
@@ -113,6 +125,10 @@ describe("Semion Vite integration", () => {
       (output): output is TestAsset =>
         output.type === "asset" && output.fileName.endsWith(".svg"),
     );
+    const cssAssets = outputs.filter(
+      (output): output is TestAsset =>
+        output.type === "asset" && output.fileName.endsWith(".css"),
+    );
     const svgSources = svgAssets.map((asset) => String(asset.source));
     const expectedSources = ["heart.svg", "search.svg", "settings.svg"].map((filename) =>
       readFileSync(path.join(root, "src/icons", filename), "utf8"),
@@ -120,6 +136,9 @@ describe("Semion Vite integration", () => {
 
     expect(svgAssets).toHaveLength(3);
     expect(svgSources.sort()).toEqual(expectedSources.sort());
+    expect(cssAssets).toHaveLength(1);
+    expect(String(cssAssets[0]?.source)).toContain(".semion-icon");
+    expect(String(cssAssets[0]?.source)).toContain("background-color:currentColor");
   });
 });
 
@@ -159,7 +178,6 @@ function createFixture(): string {
   writeFileSync(
     path.join(root, "src/main.tsx"),
     'import { Icon } from "semion";\n' +
-      'import "semion/style.css";\n' +
       'import "./app.css";\n' +
       'import { createRoot } from "react-dom/client";\n' +
       'export function App() { return <button className="icon-button" onClick={() => { void import("./lazy.tsx"); }}><Icon name="search" aria-label="Search" /></button>; }\n' +

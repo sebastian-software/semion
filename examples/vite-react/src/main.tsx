@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { Icon } from "semion";
-import "semion/style.css";
 import "./styles.css";
 
 function IconDemo() {

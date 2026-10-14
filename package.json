@@ -24,12 +24,10 @@
     "./vite": {
       "types": "./dist/vite-plugin.d.ts",
       "import": "./dist/vite-plugin.js"
-    },
-    "./style.css": "./style.css"
+    }
   },
   "files": [
     "dist",
-    "style.css",
     "README.md",
     "LICENSE-MIT",
     "LICENSE-APACHE"

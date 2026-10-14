@@ -2,7 +2,8 @@
 
 Semion is a small React and Vite prototype for compile-time SVG mask icons.
 Import the `Icon` marker in TSX, and Semion rewrites each static use to a span
-with a per-file SVG URL import.
+with a per-file SVG URL import. The Vite plugin supplies the shared mask styles
+automatically, so the app does not need a Semion CSS import.
 
 The Vite adapter is written in TypeScript and uses the existing native
 `oxc-parser` package to parse JSX and TSX. It edits the original module and
@@ -25,7 +26,6 @@ Put SVG files in `src/icons`. Semion uses each top-level filename without the
 
 ```tsx
 import { Icon } from "semion";
-import "semion/style.css";
 
 export function SearchButton() {
   return (
@@ -49,8 +49,13 @@ export default defineConfig({
 ```
 
 Put SVG files in `src/icons`; each top-level filename without `.svg` is an
-available icon name. Import `semion/style.css` once in the app for mask sizing
-and `currentColor` fill.
+available icon name. The plugin writes `src/semion.generated.d.ts` when Vite
+starts, then refreshes it during builds and icon changes. Include that file in
+the TypeScript project for `Icon` name completion and validation. A project
+that includes `src` already picks it up; if `tsconfig.json` has a narrower
+`include`, add the generated file there. If you set `typesFile`, include that
+path instead. Before Vite has generated the declaration, `IconName` falls back
+to `string`, so TypeScript cannot catch a misspelled name yet.
 
 ## Run the example
 
@@ -85,14 +90,58 @@ from the configured SVG files.
   spreads, `className`, `style`, and accessibility attributes. Its helper
   removes any runtime `name` value and forces the selected mask URL after
   spreads and user style, so a spread cannot change the static icon choice.
+- The transform imports one shared virtual stylesheet. Vite deduplicates it
+  across transformed modules and includes its sizing, mask alignment, and
+  `currentColor` rules in the app's CSS output. No Semion CSS import or manual
+  mask styling is needed. Use regular app CSS for button and link states, size
+  overrides, and theme colors.
 - The plugin runs in Vite's `pre` tier, before the React JSX transform. It does
   not change Vite's global asset inlining setting.
 
-Import `semion/style.css` once to get the shared sizing, mask alignment, and
-`currentColor` fill. Use regular CSS for hover, active, disabled, and theme
-colors. Put button or link semantics on the containing control. For decorative
-icons, pass `aria-hidden="true"`; for informative icons, provide an accessible
-name or nearby text.
+Put button or link semantics on the containing control. For decorative icons,
+pass `aria-hidden="true"`; for informative icons, provide an accessible name
+or nearby text.
+
+## From JSX to HTML
+
+For the search button above, the Semion transform runs before React's JSX
+transform. It removes the marker import, adds the external SVG and virtual CSS
+imports, and replaces `<Icon>` with a span. The generated helper preserves
+other props and applies the mask URL:
+
+```tsx
+import __semionIcon0 from "./icons/search.svg?no-inline";
+import "virtual:semion/styles.css";
+
+function __semionIconProps(props, asset) {
+  const result = { ...props };
+  delete result.name;
+  const mask = "url(" + JSON.stringify(asset) + ")";
+  return {
+    ...result,
+    className: result.className ? "semion-icon " + result.className : "semion-icon",
+    style: { ...result.style, maskImage: mask, WebkitMaskImage: mask },
+  };
+}
+
+export function SearchButton() {
+  return (
+    <button type="button" aria-label="Search">
+      <span {...__semionIconProps({["aria-hidden"]: "true"}, __semionIcon0)} />
+    </button>
+  );
+}
+```
+
+React receives a span, not the `Icon` marker. A production render looks like
+this; the SVG asset hash varies between builds:
+
+```html
+<button type="button" aria-label="Search"><span aria-hidden="true" class="semion-icon" style="mask-image:url(&quot;/assets/search-abc123.svg&quot;);-webkit-mask-image:url(&quot;/assets/search-abc123.svg&quot;)"></span></button>
+```
+
+The SVG paths stay in the external asset, not in the DOM. The span uses the
+button's `currentColor` for its mask.
 
 ## Prototype boundaries
 
@@ -103,9 +152,9 @@ other framework adapters, or ship a rendering registry. The marker throws if
 it reaches React without the Vite plugin.
 
 Semion is published as an ESM-only package. The `semion` entry exports the
-React marker and types, `semion/vite` exports the Vite plugin, and
-`semion/style.css` exports the shared mask styles. The package is dual-licensed
-under MIT OR Apache-2.0; users may choose either license for Semion's
-first-party code. Its tarball includes the built JavaScript, declarations, CSS,
-README, and both license texts. Example Lucide and Feather assets retain their
-separate upstream terms and are excluded from the npm package.
+React marker and types, and `semion/vite` exports the Vite plugin. The package
+is dual-licensed under MIT OR Apache-2.0; users may choose either license for
+Semion's first-party code. Its tarball includes the built JavaScript,
+declarations, README, and both license texts. Example Lucide and Feather
+assets retain their separate upstream terms and are excluded from the npm
+package.

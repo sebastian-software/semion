@@ -5,6 +5,7 @@ import type { HTMLAttributes } from "react";
  */
 export interface IconNameRegistry {}
 
+/** Falls back to string until the Vite plugin's declaration is included. */
 export type IconName = [keyof IconNameRegistry] extends [never]
   ? string
   : keyof IconNameRegistry & string;

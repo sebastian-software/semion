@@ -194,6 +194,12 @@ export function transformIcons(
     });
   }
 
+  edits.push({
+    start: insertion,
+    end: insertion,
+    text: 'import "virtual:semion/styles.css";\n',
+  });
+
   const helper =
     "function " +
     helperName +
