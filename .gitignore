@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+.cache/
+.vite/
+.pnpm-store/
+/work/
+/outputs/
+.env
+.env.*
+!.env.example
+.npmrc
+*.log
