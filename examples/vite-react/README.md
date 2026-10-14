@@ -19,4 +19,5 @@ The selected SVGs are from the [Lucide repository](https://github.com/lucide-ico
 Search is derived from Feather and uses its MIT terms; settings and heart use
 Lucide's ISC terms. The upstream license text is included in
 `LUCIDE-LICENSE.txt`, and the source links are listed in
-`THIRD_PARTY_NOTICES.md`.
+`THIRD_PARTY_NOTICES.md`. Identical copies in `public/` are served with the
+Pages demo so the deployed icon assets keep their notices available.

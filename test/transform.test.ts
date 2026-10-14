@@ -21,6 +21,7 @@ describe("Icon source transform", () => {
 
     expect(result).not.toBeNull();
     expect(result?.code).toContain('from "./icons/search.svg?no-inline"');
+    expect(result?.code).toContain('import "virtual:semion/styles.css";');
     expect(result?.code).toContain("<span {...");
     expect(result?.code).toContain('import { type IconName } from "semion";');
     expect(result?.code).toContain('<Glyph name="missing" />');
@@ -51,13 +52,19 @@ describe("Icon source transform", () => {
     const result = transformIcons(source, "/project/src/view.tsx", icons);
 
     expect(result?.code.match(/search[.]svg[?]no-inline/g)).toHaveLength(1);
+    expect(result?.code.match(/virtual:semion\/styles[.]css/g)).toHaveLength(1);
     expect(result?.code).toContain("...before");
     expect(result?.code).toContain("...after");
     expect(result?.code).toContain('["className"]: className');
     expect(result?.code).toContain('["style"]: customStyle');
     expect(result?.code).toContain('["aria-label"]: "Search"');
     expect(result?.code).toContain("delete result.name;");
-    expect(result?.code).toContain("maskImage: mask, WebkitMaskImage: mask");
+    expect(result?.code).toContain("...result.style");
+    expect(result?.code).toContain("maskImage: mask,");
+    expect(result?.code).toContain("WebkitMaskImage: mask }");
+    expect(result?.code.indexOf("...result.style")).toBeLessThan(
+      result?.code.indexOf("maskImage: mask,") ?? -1,
+    );
     expect(parseSync("output.tsx", result?.code ?? "", { lang: "tsx" }).errors).toEqual([]);
   });
 

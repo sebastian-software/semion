@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+examples/vite-react/src/pipeline-examples.generated.ts
 .DS_Store
 .cache/
 .vite/

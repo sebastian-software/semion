@@ -194,13 +194,23 @@ export function transformIcons(
     });
   }
 
+  edits.push({
+    start: insertion,
+    end: insertion,
+    text: 'import "virtual:semion/styles.css";\n',
+  });
+
   const helper =
     "function " +
     helperName +
     "(props, asset) {\n" +
     "  const result = { ...props };\n" +
     "  delete result.name;\n" +
-    "  const mask = \"url(\" + JSON.stringify(asset) + \")\";\n" +
+    "  const cssUrl = asset.replace(/[\\u0000-\\u0020\\u007f\"'()\\\\]/g, (character) => {\n" +
+    "    const code = character.charCodeAt(0) || 0xfffd;\n" +
+    "    return \"\\\\\" + code.toString(16) + \" \";\n" +
+    "  });\n" +
+    "  const mask = \"url(\" + cssUrl + \")\";\n" +
     "  return {\n" +
     "    ...result,\n" +
     "    className: result.className ? \"semion-icon \" + result.className : \"semion-icon\",\n" +

@@ -55,6 +55,9 @@ importers:
         specifier: workspace:*
         version: link:../..
     devDependencies:
+      '@ferriki/core':
+        specifier: 1.0.0
+        version: 1.0.0
       '@types/react':
         specifier: 19.2.18
         version: 19.2.18
@@ -81,6 +84,56 @@ packages:
 
   '@emnapi/wasi-threads@1.2.2':
     resolution: {integrity: sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA==}
+
+  '@ferriki/core@1.0.0':
+    resolution: {integrity: sha512-MCNXL+cuc1ZLhZ6zPfOLBM47ZbbtU/fuakZW7C3rLRGmfXi5ENxHrqN9L5V/LR1rkzK8P9Pcy5kQMAiDHUsDsQ==}
+    engines: {node: '>=22.13.0'}
+
+  '@ferriki/darwin-arm64@1.0.0':
+    resolution: {integrity: sha512-UqFM8h9LDjPm2AWZwCcc2uZCYOVqkMFmBSDRP4z5zREFkJn/QMNU84CQ4/EqwiyE0id47D6ganh2i0MmQ1JblA==}
+    engines: {node: '>=22.13.0'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@ferriki/linux-arm64-gnu@1.0.0':
+    resolution: {integrity: sha512-3ubayTtYZipTHzhoF6DHvRqwmeWCDBfW57tUDlm/ulYzejz4wTOOUP+x5Ue+r1RBMbIzAQhvKtU0tzYXjCx2Aw==}
+    engines: {node: '>=22.13.0'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@ferriki/linux-arm64-musl@1.0.0':
+    resolution: {integrity: sha512-N75UfoUV+fLJr9fQpOOZmqiWbno0uIsZp5Jh9zNOQMlWR7aotGP6y5e5IPIwLsCdhJoFaL8H9iSefl6QCKclYg==}
+    engines: {node: '>=22.13.0'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@ferriki/linux-x64-gnu@1.0.0':
+    resolution: {integrity: sha512-MGEl0zlvWxWePe/WUU1/ZKMV1TT4NJkinSQBylnRlfqhk6IgzrkXPOO4mYOtOSxIYrEW9vf/4He+dLBWD2c/vw==}
+    engines: {node: '>=22.13.0'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@ferriki/linux-x64-musl@1.0.0':
+    resolution: {integrity: sha512-Su+CmNCMvGTO5c6Sqme+FObs51cuBjM1m6k9Kai1ln0JesD+ZKuBvXm0TaHvsXboHr8UgSV97up7sU6Pz19n2w==}
+    engines: {node: '>=22.13.0'}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@ferriki/win32-arm64-msvc@1.0.0':
+    resolution: {integrity: sha512-HVD0FTEYNjO2HyFuGhalTSqKO8IX6xnGp/R3RPKYxrjP9y4btHYZ40EjHdizh2dejpFf3GEWXL0SfBP5lcHrwg==}
+    engines: {node: '>=22.13.0'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@ferriki/win32-x64-msvc@1.0.0':
+    resolution: {integrity: sha512-xAwgYzBkxRoNqB/qLncaKhMvh7jK4crCA484R8CKeDG6KIhHgjMq1NmdELi+oBNFvkJ/vCZXolD48GR6hI0AkA==}
+    engines: {node: '>=22.13.0'}
+    cpu: [x64]
+    os: [win32]
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -714,6 +767,37 @@ snapshots:
   '@emnapi/wasi-threads@1.2.2':
     dependencies:
       tslib: 2.8.1
+    optional: true
+
+  '@ferriki/core@1.0.0':
+    optionalDependencies:
+      '@ferriki/darwin-arm64': 1.0.0
+      '@ferriki/linux-arm64-gnu': 1.0.0
+      '@ferriki/linux-arm64-musl': 1.0.0
+      '@ferriki/linux-x64-gnu': 1.0.0
+      '@ferriki/linux-x64-musl': 1.0.0
+      '@ferriki/win32-arm64-msvc': 1.0.0
+      '@ferriki/win32-x64-msvc': 1.0.0
+
+  '@ferriki/darwin-arm64@1.0.0':
+    optional: true
+
+  '@ferriki/linux-arm64-gnu@1.0.0':
+    optional: true
+
+  '@ferriki/linux-arm64-musl@1.0.0':
+    optional: true
+
+  '@ferriki/linux-x64-gnu@1.0.0':
+    optional: true
+
+  '@ferriki/linux-x64-musl@1.0.0':
+    optional: true
+
+  '@ferriki/win32-arm64-msvc@1.0.0':
+    optional: true
+
+  '@ferriki/win32-x64-msvc@1.0.0':
     optional: true
 
   '@jridgewell/sourcemap-codec@1.6.0': {}

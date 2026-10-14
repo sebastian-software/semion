@@ -19,6 +19,23 @@ export interface SemionOptions {
 
 const PACKAGE_ID = "semion";
 const SCRIPT_ID = /\.[cm]?[jt]sx?$/;
+const STYLE_MODULE_ID = "virtual:semion/styles.css";
+const RESOLVED_STYLE_MODULE_ID = "\0" + STYLE_MODULE_ID;
+const ICON_STYLES = `
+:where(.semion-icon) {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+`;
 
 export function semion(options: SemionOptions = {}): Plugin {
   let root = process.cwd();
@@ -73,6 +90,14 @@ export function semion(options: SemionOptions = {}): Plugin {
   return {
     name: "vite-plugin-semion",
     enforce: "pre",
+
+    resolveId(id) {
+      if (id === STYLE_MODULE_ID) return RESOLVED_STYLE_MODULE_ID;
+    },
+
+    load(id) {
+      if (id === RESOLVED_STYLE_MODULE_ID) return ICON_STYLES;
+    },
 
     configResolved(config) {
       root = config.root;
