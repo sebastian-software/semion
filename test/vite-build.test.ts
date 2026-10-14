@@ -92,11 +92,12 @@ describe("Semion Vite integration", () => {
     );
     expect(renderedHtml).toContain("width:2rem");
     expect(renderedHtml).toContain(
-      `mask-image:url(&quot;/nested/app/${eagerAsset!.fileName}&quot;)`,
+      `mask-image:url(/nested/app/${eagerAsset!.fileName})`,
     );
     expect(renderedHtml).toContain(
-      `-webkit-mask-image:url(&quot;/nested/app/${eagerAsset!.fileName}&quot;)`,
+      `-webkit-mask-image:url(/nested/app/${eagerAsset!.fileName})`,
     );
+    expect(renderedHtml).not.toContain("&quot;");
     expect(renderedHtml).not.toContain("/override.svg");
     expect(renderedHtml).not.toContain("width:3rem");
     expect(renderedHtml).not.toContain("mask-size:cover");
@@ -136,6 +137,22 @@ describe("Semion Vite integration", () => {
     );
     const typeErrors = ts.getPreEmitDiagnostics(typeProgram);
     expect(typeErrors).toHaveLength(0);
+  });
+
+  it("escapes special characters in unquoted external mask URLs", () => {
+    const renderedHtml = renderTransformedSearchButton(
+      "/project/src/view.tsx",
+      "/project/src/icons/search.svg",
+      "/nested/app/assets/icon name (large)'quoted\"backslash\\tail\n.svg",
+    );
+
+    expect(renderedHtml).toContain(
+      String.raw`mask-image:url(/nested/app/assets/icon\20 name\20 \28 large\29 \27 quoted\22 backslash\5c tail\a .svg)`,
+    );
+    expect(renderedHtml).toContain(
+      String.raw`-webkit-mask-image:url(/nested/app/assets/icon\20 name\20 \28 large\29 \27 quoted\22 backslash\5c tail\a .svg)`,
+    );
+    expect(renderedHtml).not.toContain("&quot;");
   });
 
   it("builds the Lucide React example with three external SVG assets", async () => {
