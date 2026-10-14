@@ -22,6 +22,14 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      - name: Install project tools
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
+        with:
+          version: 2026.9.5
+          install_args: --locked
+      - name: Check generated README
+        run: mise run readme:check
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - run: pnpm run check
