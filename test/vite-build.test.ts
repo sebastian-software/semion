@@ -7,6 +7,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
@@ -139,6 +140,10 @@ describe("Semion Vite integration", () => {
 
   it("builds the Lucide React example with three external SVG assets", async () => {
     const root = path.join(packageRoot, "examples/vite-react");
+    execFileSync(process.execPath, ["scripts/prepare-pipeline.mjs"], {
+      cwd: root,
+      stdio: "pipe",
+    });
     const result = await build({
       root,
       configFile: path.join(root, "vite.config.ts"),
