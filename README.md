@@ -96,11 +96,14 @@ cannot catch a misspelled name yet.
 
 ## Run the example
 
-The [interactive React and Vite source preview](https://sebastian-software.github.io/semion/)
-uses local Lucide search, settings, and heart SVGs. It demonstrates generated
-name completion, class and style-prop sizing, inherited color, hover, pressed,
-and disabled states, plus the JSX-to-HTML transform. The preview reflects this
-repository's source; it is not the published npm `0.0.1` package.
+The interactive React and Vite [source preview app](examples/vite-react) uses
+local Lucide search, settings, and heart SVGs. It demonstrates generated name
+completion, class and style-prop sizing, inherited color, hover, pressed, and
+disabled states, plus the JSX-to-HTML transform. Its GitHub Pages target is the
+[Semion site](https://sebastian-software.github.io/semion/); manual deployment
+of a source ref becomes available when the Pages dispatch workflow is present
+on the default branch. The preview reflects this repository's source; it is
+not the published npm `0.0.1` package.
 
 ```sh
 pnpm install
