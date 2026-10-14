@@ -7,18 +7,23 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import react from "@vitejs/plugin-react";
+import { createElement, type FunctionComponent } from "react";
 import ts from "typescript";
 import { build } from "vite";
 
+import { transformIcons } from "../src/transform.js";
 import { semion } from "../src/vite-plugin.js";
 
 const temporaryRoots: string[] = [];
 const packageRoot = path.resolve(".");
 const dependencies = path.join(packageRoot, "node_modules");
+const renderToStaticMarkup = createRequire(import.meta.url)("react-dom/server")
+  .renderToStaticMarkup as (element: ReturnType<typeof createElement>) => string;
 
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) rmSync(root, { recursive: true, force: true });
@@ -32,6 +37,7 @@ describe("Semion Vite integration", () => {
       root,
       configFile: false,
       base: "/nested/app/",
+      logLevel: "silent",
       plugins: [semion({ iconDir: "src/icons" }), react()],
       build: {
         outDir: entry,
@@ -69,9 +75,32 @@ describe("Semion Vite integration", () => {
 
     expect(cssAssets).toHaveLength(1);
     const emittedCss = String(cssAssets[0]?.source);
-    expect(emittedCss).toContain(".semion-icon");
-    expect(emittedCss).toContain("background-color:currentColor");
+    expect(emittedCss).toContain(":where(.semion-icon)");
     expect(emittedCss).toContain("mask-size:contain");
+    expect(emittedCss).toContain("background-color:currentColor");
+    expect(emittedCss).toContain("width:3rem");
+    expect(emittedCss).toContain("mask-size:cover");
+
+    const renderedHtml = renderTransformedSearchButton(
+      path.join(root, "src/render.tsx"),
+      path.join(root, "src/icons/search.svg"),
+      "/nested/app/" + eagerAsset!.fileName,
+    );
+    expect(renderedHtml).toContain(
+      '<span aria-hidden="true" class="semion-icon button-icon" style=',
+    );
+    expect(renderedHtml).toContain("width:2rem");
+    expect(renderedHtml).toContain(
+      `mask-image:url(&quot;/nested/app/${eagerAsset!.fileName}&quot;)`,
+    );
+    expect(renderedHtml).toContain(
+      `-webkit-mask-image:url(&quot;/nested/app/${eagerAsset!.fileName}&quot;)`,
+    );
+    expect(renderedHtml).not.toContain("/override.svg");
+    expect(renderedHtml).not.toContain("width:3rem");
+    expect(renderedHtml).not.toContain("mask-size:cover");
+    expect(renderedHtml).not.toContain("background-color");
+    expect(renderedHtml).not.toContain("<svg");
 
     const generatedTypes = readGeneratedTypes(root);
     expect(generatedTypes).toContain('"search": true;');
@@ -138,7 +167,9 @@ describe("Semion Vite integration", () => {
     expect(svgSources.sort()).toEqual(expectedSources.sort());
     expect(cssAssets).toHaveLength(1);
     expect(String(cssAssets[0]?.source)).toContain(".semion-icon");
-    expect(String(cssAssets[0]?.source)).toContain("background-color:currentColor");
+    expect(String(cssAssets[0]?.source)).toContain("width:1.5rem");
+    expect(String(cssAssets[0]?.source)).toContain("height:1.5rem");
+    expect(String(cssAssets[0]?.source)).toContain("mask-size:contain");
   });
 });
 
@@ -191,7 +222,7 @@ function createFixture(): string {
   );
   writeFileSync(
     path.join(root, "src/app.css"),
-    ".icon-button { color: rgb(21, 67, 119); } .icon-button:hover { color: rgb(180, 32, 72); }",
+    ".icon-button { color: rgb(21, 67, 119); } .icon-button:hover { color: rgb(180, 32, 72); } .icon-button:disabled { color: rgb(152, 162, 179); } .icon-button .semion-icon { width: 3rem; height: 2rem; mask-size: cover; }",
   );
   return root;
 }
@@ -219,4 +250,40 @@ function outputFiles(result: unknown): Array<TestChunk | TestAsset> {
 
 function readGeneratedTypes(root: string): string {
   return readFileSync(path.join(root, "src/semion.generated.d.ts"), "utf8");
+}
+
+function renderTransformedSearchButton(
+  filename: string,
+  iconFile: string,
+  assetUrl: string,
+): string {
+  const source =
+    'import { Icon } from "semion";\n' +
+    'export function SearchButton() { return <button className="icon-button" type="button" aria-label="Search"><Icon name="search" aria-hidden="true" className="button-icon" style={{ width: "2rem", maskImage: "url(/override.svg)" }} /></button>; }\n';
+  const transformed = transformIcons(
+    source,
+    filename,
+    new Map([["search", { file: iconFile }]]),
+  );
+  if (!transformed) throw new Error("Expected the search button to be transformed.");
+
+  const javascript = transformed.code.replace(
+    /import (__semionIcon\d+) from "[^"]+\.svg\?no-inline";\n/g,
+    (_match, localName: string) =>
+      `const ${localName} = ${JSON.stringify(assetUrl)};\n`,
+  ).replace('import "virtual:semion/styles.css";\n', "");
+  const compiled = ts.transpileModule(javascript, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.CommonJS,
+    },
+  }).outputText;
+  const module: { exports: Record<string, unknown> } = { exports: {} };
+  new Function("require", "exports", "module", compiled)(
+    createRequire(import.meta.url),
+    module.exports,
+    module,
+  );
+  const SearchButton = module.exports.SearchButton as FunctionComponent;
+  return renderToStaticMarkup(createElement(SearchButton));
 }

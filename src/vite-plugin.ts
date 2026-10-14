@@ -22,7 +22,7 @@ const SCRIPT_ID = /\.[cm]?[jt]sx?$/;
 const STYLE_MODULE_ID = "virtual:semion/styles.css";
 const RESOLVED_STYLE_MODULE_ID = "\0" + STYLE_MODULE_ID;
 const ICON_STYLES = `
-.semion-icon {
+:where(.semion-icon) {
   display: inline-block;
   width: 1em;
   height: 1em;

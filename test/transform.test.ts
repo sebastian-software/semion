@@ -59,7 +59,12 @@ describe("Icon source transform", () => {
     expect(result?.code).toContain('["style"]: customStyle');
     expect(result?.code).toContain('["aria-label"]: "Search"');
     expect(result?.code).toContain("delete result.name;");
-    expect(result?.code).toContain("maskImage: mask, WebkitMaskImage: mask");
+    expect(result?.code).toContain("...result.style");
+    expect(result?.code).toContain("maskImage: mask,");
+    expect(result?.code).toContain("WebkitMaskImage: mask }");
+    expect(result?.code.indexOf("...result.style")).toBeLessThan(
+      result?.code.indexOf("maskImage: mask,") ?? -1,
+    );
     expect(parseSync("output.tsx", result?.code ?? "", { lang: "tsx" }).errors).toEqual([]);
   });
 
