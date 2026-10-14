@@ -1,6 +1,6 @@
 {
   "name": "semion",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Compile-time SVG mask icons for React and Vite",
   "repository": {
     "type": "git",
