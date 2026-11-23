@@ -1,5 +1,7 @@
 # Semion
 
+[![Node.js test matrix 22, 24, and 26](https://img.shields.io/badge/Node.js-22%20%7C%2024%20%7C%2026-339933?logo=nodedotjs&logoColor=white)](https://github.com/sebastian-software/semion/actions/workflows/ci.yml)
+
 Some name-based icon APIs rely on a shared runtime registry or embed SVG markup
 in JavaScript. Importing SVG files one by one keeps the asset choice explicit,
 but means wiring each path into JSX yourself. Semion keeps the concise
